@@ -1,0 +1,60 @@
+name: TwoSideBFS
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  style-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup clang-format
+      shell: bash
+      run: sudo apt-get install -y clang-format-14
+    - name: Check formatting
+      run: ./scripts/style-check.sh
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang]
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        token: ${{ secrets.PAT_TOKEN }}
+
+    - name: Set output dir
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Install SuiteSparse and GraphBLAS
+      run: ./scripts/get-graphblas.sh
+
+    - name: Configure CMake
+      run: |
+        export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include
+        export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+        -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} \
+        -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} \
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
