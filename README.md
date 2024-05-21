@@ -1,9 +1,9 @@
 2-Side-BFS based on a linear algebra
-------------------------------------
+====================================
 Реализация 2-side-BFS с ограничением по максимальной длине при помощи линейной алгебры и библиотеки __GraphBLAS__, __LAGraph__ и инструмент для измерения производительности алгоритма
 
 Быстрый старт
-=============
+-------------
 Для быстрого старта выполните:
 ```bash
 sudo apt install -y g++ gcc cmake python3 &&
@@ -18,7 +18,7 @@ mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
 Далее переходите к конвертации графа
 
 Зависимости
-===========
+-----------
 Для сборки необходимы:
 - `cmake`
 - Компилятор `g++` или `clang++`
@@ -41,7 +41,7 @@ apt install -y python3
 ```
 
 SuiteSparse:GraphBLAS
-=====================
+---------------------
 Чтобы скачать собранную библиотеку можно воспользоваться одним из скриптов:
 ```bash
 ./scripts/get-graphblas.sh
@@ -50,7 +50,7 @@ SuiteSparse:GraphBLAS
 Но при сборке библиотеки под конкретную машину время работы может стать заметно меньше: [установка SuiteSparse:GraphBLAS](https://github.com/DrTimothyAldenDavis/GraphBLAS/blob/stable/README.md).
 
 Сборка
-======
+------
 Для сборки проекта используется CMake
 ```bash
 # Эти переменные нужны, если GraphBLAS скачивался pre-built
@@ -60,7 +60,7 @@ mkdir build && cd build && cmake .. && make && cd ..
 ```
 
 Конвертация графа в нужный формат
-=================================
+---------------------------------
 Для конвертации графов из формата csv в mtx используется python скрипт `scripts/convert-csv-to-mtx.py`:
 ```
 python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
@@ -68,7 +68,7 @@ python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
 Словарь соответствия вершина/номер по-умолчанию называется `dictionary.txt`
 
 Запуск бенчмарков
-=================
+-----------------
 Для измерения производительности в зависимости от длины можно использовать следующую команду:
 ```bash
 ./build/two-side-bfs
