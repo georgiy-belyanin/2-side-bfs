@@ -4,9 +4,11 @@
 
 Быстрый старт
 -------------
-Для быстрого старта выполните:
+Для сборки выполните:
 ```bash
 sudo apt install -y g++ gcc cmake python3 &&
+git clone https://github.com/georgiy-belyanin/2-side-bfs.git &&
+cd 2-side-bfs &&
 git submodule init &&
 git submodule update &&
 ./scripts/get-graphblas.sh &&
@@ -15,7 +17,41 @@ export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so &&
 mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
 ```
 
-Далее переходите к конвертации графа
+Конвертация графа в нужный формат
+---------------------------------
+Для конвертации графов из формата csv в mtx используется python скрипт `scripts/convert-csv-to-mtx.py`:
+```bash
+python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
+```
+Словарь соответствия вершина/номер по-умолчанию называется `dictionary.txt`
+
+Пример использования:
+```bash
+python3 ./scripts/convert-csv-to-mtx.py graph.csv graph.mtx
+```
+
+Запуск бенчмарков
+-----------------
+Для измерения производительности в зависимости от длины можно использовать следующую команду:
+```bash
+./build/two-side-bfs
+    [-r число запусков для каждой длины (по-умолчанию: 1000)]
+    [-l наименьшая изучаемая длина пути (по-умолчанию: 2)]
+    [-m наибольшая изучаемая длина пути (по-умолчанию: 5)]
+    <graph.mtx>
+    [results/]
+```
+Для каждой из максимальной длин в диапазоне задаваемом аргументами `l` и `m` будет получен файл по пути `results/<макс-длина-пути>.txt`, в файлах построчно содержится время запуска кажддого из запросов.
+
+Пример использования:
+```bash
+./build/two-side-bfs graph.mtx
+```
+
+Для анализа результатов измерений можно воспользоваться __Jupyter-notebook__, графики доступны в `plots.ipynb`:
+```bash
+jupyter notebook results
+```
 
 Зависимости
 -----------
@@ -56,32 +92,6 @@ SuiteSparse:GraphBLAS
 # Эти переменные нужны, если GraphBLAS скачивался pre-built
 export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include
 export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so
-mkdir build && cd build && cmake .. && make && cd ..
-```
-
-Конвертация графа в нужный формат
----------------------------------
-Для конвертации графов из формата csv в mtx используется python скрипт `scripts/convert-csv-to-mtx.py`:
-```
-python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
-```
-Словарь соответствия вершина/номер по-умолчанию называется `dictionary.txt`
-
-Запуск бенчмарков
------------------
-Для измерения производительности в зависимости от длины можно использовать следующую команду:
-```bash
-./build/two-side-bfs
-    [-r число запусков для каждой длины (по-умолчанию: 1000)]
-    [-l ]
-    [-m наибольшая  длина пути] 
-    <graph.mtx>
-    [results/]
-```
-Для каждой из длин в диапазоне задаваемом аргументами `l` и `m` будет получен файл по пути `results/<макс-длина-пути>.txt`, в файлах построчно содержится время запуска кажддого из запросов.
-
-Для анализа результатов измерений можно воспользоваться __Jupyter-notebook__, просмотрев `plots.ipynb`:
-```bash
-jupyter notebook results
+mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
 ```
 
