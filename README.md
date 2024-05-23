@@ -6,7 +6,7 @@ Linear algebra based 2-side-BFS
 -------------
 Для сборки выполните:
 ```bash
-sudo apt install -y g++ gcc cmake python3 jupyter-notebook &&
+sudo apt install -y g++ gcc cmake python3 unzip jupyter-notebook &&
 git clone https://github.com/georgiy-belyanin/2-side-bfs.git &&
 cd 2-side-bfs &&
 git submodule init &&
@@ -14,7 +14,7 @@ git submodule update &&
 ./scripts/get-graphblas.sh &&
 export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include &&
 export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so &&
-mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
+mkdir build && cd build && cmake .. -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} && make -j`nproc` && cd ..
 ```
 
 Конвертация графа в нужный формат
@@ -61,10 +61,11 @@ jupyter notebook <results/>
 - `cmake`
 - Компилятор `g++` или `clang++`
 - Библиотека `SuiteSparse:GraphBLAS`
+- Утилита `unzip`
 
 Для установки зависимостей сборки на debian-based дистрибутивах:
 ```bash
-apt install -y g++ gcc cmake
+apt install -y g++ gcc cmake unzip
 ```
 
 Для сборки так же необходимо получить сабмодули:
@@ -89,11 +90,15 @@ SuiteSparse:GraphBLAS
 
 Сборка
 ------
-Для сборки проекта используется CMake
+Для сборки проекта используется CMake, в случае, если SuiteSparse:GraphBLAS не собирался из исходников, выполните из корня репозитория:
 ```bash
-# Эти переменные нужны, если GraphBLAS скачивался pre-built
+# Эти переменные нужны, если GraphBLAS скачивается pre-built
 export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include
 export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so
-mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
+mkdir build && cd build && cmake .. -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} && make -j`nproc` && cd ..
 ```
 
+Если SuiteSparse:GraphBLAS собирался и устанавливался предварительно из исходного кода, достаточно выполнить:
+```bash
+mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
+```
