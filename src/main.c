@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
     LAGraph_Graph G = NULL;
     LAGraph_Graph G_tr = NULL;
 
+    struct timespec start, finish;
+
     int min_length = 2;
     int max_length = 5;
     int runs = 1000;
@@ -87,6 +89,9 @@ int main(int argc, char **argv) {
         return -1;
 
     printf("Running on a matrix %s\n", aname);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     FILE *f = fopen(aname, "r");
 
     CHECK_TRUE(f != NULL);
@@ -98,6 +103,11 @@ int main(int argc, char **argv) {
 
     CHECK_ZERO(LAGraph_New(&G, &A, kind, msg));
     CHECK_ZERO(LAGraph_New(&G_tr, &A_tr, kind, msg));
+
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    double elapsed = (finish.tv_sec - start.tv_sec) + (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+    printf("Graph loaded, time %lfs\n", elapsed);
 
     CHECK_TRUE(A == NULL);
 
@@ -121,7 +131,6 @@ int main(int argc, char **argv) {
             uint32_t src = rand() % n;
             uint32_t dest = rand() % n;
 
-            struct timespec start, finish;
 
             clock_gettime(CLOCK_MONOTONIC, &start);
             int res = two_side_bfs(G, G_tr, src, dest, path_length, msg);
