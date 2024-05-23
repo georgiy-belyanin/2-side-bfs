@@ -131,7 +131,6 @@ int main(int argc, char **argv) {
             uint32_t src = rand() % n;
             uint32_t dest = rand() % n;
 
-
             clock_gettime(CLOCK_MONOTONIC, &start);
             int res = two_side_bfs(G, G_tr, src, dest, path_length, msg);
             clock_gettime(CLOCK_MONOTONIC, &finish);
@@ -140,7 +139,7 @@ int main(int argc, char **argv) {
 
             elapsedV = (finish.tv_sec - start.tv_sec);
             elapsedV += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-            timesV[i] = elapsedV;
+            timesV[i] = elapsedV * 1000;
             if (res > 0) {
                 exists[i] = true;
                 existsCount++;
@@ -149,18 +148,32 @@ int main(int argc, char **argv) {
         }
 
         double meanV = 0.0;
+        double meanEV = 0.0;
+        double meanNEV = 0.0;
 
         for (int i = 0; i < runs; i++)
             meanV += timesV[i];
         meanV /= runs;
+
+        for (int i = 0; i < runs; i++)
+            if (exists[i])
+                meanEV += timesV[i];
+        meanEV /= existsCount;
+
+        for (int i = 0; i < runs; i++)
+            if (!exists[i])
+                meanNEV += timesV[i];
+        meanNEV /= runs - existsCount;
 
         double stdenvV = 0.0;
         for (int i = 0; i < runs; i++)
             stdenvV += (timesV[i] - meanV) * (timesV[i] - meanV);
         stdenvV = stdenvV / runs;
 
-        printf("Path length %d: mean %fs, std-env %fs, path-exists percentage %.2lf%%, frequency %d query/sec\n",
-               path_length, meanV, stdenvV, ((double)existsCount) / runs * 100, (int)(1 / meanV));
+        printf("Path length %d: mean %.3fms, path-exists percentage %.1lf%%, frequency %d query/sec\n", path_length,
+               meanV, ((double)existsCount) / runs * 100, (int)(1000 / meanV));
+        printf("               exists %.3fms, %d query/sec, not exists %.3fms, %d query/sec\n", meanEV,
+               (int)(1000 / meanEV), meanNEV, (int)(1000 / meanNEV));
 
         char path[256];
         snprintf(path, sizeof(path), "%s/%d.txt", argc - optind > 1 ? argv[optind + 1] : "results", path_length);
