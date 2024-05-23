@@ -104,6 +104,12 @@ int main(int argc, char **argv) {
     GrB_Index n = 0;
     CHECK_ZERO(GrB_Matrix_nrows(&n, G->A));
 
+    for (int path_length = 100; path_length >= 1; path_length--) {
+        char path[256];
+        snprintf(path, sizeof(path), "%s/%d.txt", argc - optind > 1 ? argv[optind + 1] : "results", path_length);
+        remove(path);
+    }
+
     for (int path_length = max_length; path_length >= min_length; path_length--) {
         double elapsedV = 0.0;
         double timesV[runs + 1];
@@ -144,8 +150,8 @@ int main(int argc, char **argv) {
             stdenvV += (timesV[i] - meanV) * (timesV[i] - meanV);
         stdenvV = stdenvV / runs;
 
-        printf("Path length: mean %fs, std-env %fs, path-exists percentage %.2lf%%, frequency %d query/sec\n", meanV,
-               stdenvV, ((double)existsCount) / runs * 100, (int)(1 / meanV));
+        printf("Path length %d: mean %fs, std-env %fs, path-exists percentage %.2lf%%, frequency %d query/sec\n",
+               path_length, meanV, stdenvV, ((double)existsCount) / runs * 100, (int)(1 / meanV));
 
         char path[256];
         snprintf(path, sizeof(path), "%s/%d.txt", argc - optind > 1 ? argv[optind + 1] : "results", path_length);
