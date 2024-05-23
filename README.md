@@ -6,7 +6,7 @@ Linear algebra based 2-side-BFS
 -------------
 Для сборки выполните:
 ```bash
-sudo apt install -y g++ gcc cmake python3 &&
+sudo apt install -y g++ gcc cmake python3 jupyter-notebook &&
 git clone https://github.com/georgiy-belyanin/2-side-bfs.git &&
 cd 2-side-bfs &&
 git submodule init &&
@@ -47,11 +47,13 @@ python3 ./scripts/convert-csv-to-mtx.py graph.csv graph.mtx
 ```bash
 ./build/two-side-bfs graph.mtx
 ```
+В консоль для каждой макс. длины при этом будет выведена информация о среднем времени работы, стандартном отклонении, проценте запросов, в которых путь нашёлся и число запросов в секунду
 
-Для анализа результатов измерений можно воспользоваться __Jupyter-notebook__, графики доступны в `plots.ipynb`:
+Для детального анализа результатов измерений можно воспользоваться __Jupyter-notebook__, нужные скрипты находятся в файле `plots.ipynb`:
 ```bash
-jupyter notebook results
+jupyter notebook <results/>
 ```
+После выполнения команды откроется браузер, в jupyter notebook необходимо выполнить каждую ячейку, сделать это можно выбором `Cell > Run All` в тулбаре, или многократным нажатием `Shift+Enter`. Отрисованные boxplot появятся внизу файла и станут доступны в директории с результатами с названиями `both.png` - boxplot для всех случаев, `path-exists.png` - когда путь есть, `not-exists.png` - когда пути нет. В Boxplot чёрным выделяется медиана, зелёным - среднее.
 
 Зависимости
 -----------
