@@ -1,3 +1,6 @@
 [submodule "vendor/LAGraph"]
 	path = vendor/LAGraph
 	url = https://github.com/GraphBLAS/LAGraph.git
+[submodule "vendor/GraphBLAS"]
+	path = vendor/GraphBLAS
+	url = https://github.com/DrTimothyAldenDavis/GraphBLAS.git

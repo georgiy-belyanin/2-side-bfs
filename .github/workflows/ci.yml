@@ -25,6 +25,7 @@ jobs:
         os: [ubuntu-latest]
         build_type: [Release]
         c_compiler: [gcc, clang]
+        build_from_sources: [1, 0]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
@@ -43,17 +44,15 @@ jobs:
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Install SuiteSparse and GraphBLAS
-      run: ./scripts/get-graphblas.sh
+      if: ${{ matrix.build_from_sources == 0 }}
+      run: sudo apt-get install libsuitesparse-dev
 
     - name: Configure CMake
       run: |
-        export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include
-        export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so
         cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-        -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} \
-        -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} \
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        -DBUILD_FROM_SOURCES=${{ matrix.build_from_sources }} \
         -S ${{ github.workspace }}
 
     - name: Build
