@@ -23,8 +23,6 @@
         exit(-1);                                                                                                      \
     } while (0)
 
-LAGraph_Graph G = NULL;
-
 void usage() {
     printf("\ntwo-side-bfs\n"
            "\t[-r run count (default: 1000)]\n"
@@ -36,6 +34,9 @@ void usage() {
 }
 
 int main(int argc, char **argv) {
+    LAGraph_Graph G = NULL;
+    LAGraph_Graph G_tr = NULL;
+
     int min_length = 2;
     int max_length = 5;
     int runs = 1000;
@@ -73,6 +74,7 @@ int main(int argc, char **argv) {
 
     LAGraph_Init(msg);
     GrB_Matrix A = NULL;
+    GrB_Matrix A_tr = NULL;
 
     srand(time(NULL));
 
@@ -86,41 +88,49 @@ int main(int argc, char **argv) {
 
     printf("Running on a matrix %s\n", aname);
     FILE *f = fopen(aname, "r");
+
     CHECK_TRUE(f != NULL);
     CHECK_ZERO(LAGraph_MMRead(&A, f, msg));
     CHECK_ZERO(fclose(f));
 
+    GrB_Matrix_dup(&A_tr, A);
+    GrB_transpose(A_tr, NULL, NULL, A_tr, NULL);
+
     CHECK_ZERO(LAGraph_New(&G, &A, kind, msg));
+    CHECK_ZERO(LAGraph_New(&G_tr, &A_tr, kind, msg));
+
     CHECK_TRUE(A == NULL);
 
     GrB_Index n = 0;
     CHECK_ZERO(GrB_Matrix_nrows(&n, G->A));
 
     for (int path_length = max_length; path_length >= min_length; path_length--) {
-        int count = 0;
         double elapsedV = 0.0;
         double timesV[runs + 1];
-        for (int64_t i = 0; i < runs; i++, count++) {
+        bool exists[runs + 1];
+        int existsCount = 0;
+        ;
+
+        for (int64_t i = 0; i < runs; i++) {
             uint32_t src = rand() % n;
             uint32_t dest = rand() % n;
 
-            GrB_Vector parent = NULL;
-
-            int64_t maxlevel;
-            GrB_Index nvisited;
             struct timespec start, finish;
 
             clock_gettime(CLOCK_MONOTONIC, &start);
-            two_side_bfs(&parent, G, src, dest, path_length, msg);
+            int res = two_side_bfs(G, G_tr, src, dest, path_length, msg);
             clock_gettime(CLOCK_MONOTONIC, &finish);
 
-            printf("%d %d: checked\n", src + 1, dest + 1);
+            // printf("%d %d: %d\n", src + 1, dest + 1, res);
 
             elapsedV = (finish.tv_sec - start.tv_sec);
             elapsedV += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-            timesV[count] = elapsedV;
-
-            CHECK_ZERO(GrB_free(&parent));
+            timesV[i] = elapsedV;
+            if (res > 0) {
+                exists[i] = true;
+                existsCount++;
+            } else
+                exists[i] = false;
         }
 
         double meanV = 0.0;
@@ -134,21 +144,30 @@ int main(int argc, char **argv) {
             stdenvV += (timesV[i] - meanV) * (timesV[i] - meanV);
         stdenvV = stdenvV / runs;
 
-        printf("Path length: %d\n", path_length);
-        printf("Modified      : mean %fs, std-env%fs\n", meanV, stdenvV);
+        printf("Path length: mean %fs, std-env %fs, path-exists percentage %.2lf%%, frequency %d query/sec\n", meanV,
+               stdenvV, ((double)existsCount) / runs * 100, (int)(1 / meanV));
 
-        // TBD: file output
-        // FILE *f = fopen(argc < 2
-        //                : "results/"
-        //                  "") CHECK_TRUE(f != NULL);
+        char path[256];
+        snprintf(path, sizeof(path), "%s/%d.txt", argc - optind > 1 ? argv[optind + 1] : "results", path_length);
+        FILE *f = fopen(path, "w");
+        CHECK_TRUE(f != NULL);
 
-        // for (int i = 0; i < runs; i++)
-        //     fprintf(f, "%f, ", timesV[i]);
+        for (int i = 0; i < runs; i++)
+            fprintf(f, "%f, ", timesV[i]);
+        fprintf(f, "\n");
+        for (int i = 0; i < runs; i++)
+            if (exists[i])
+                fprintf(f, "%f, ", timesV[i]);
+        fprintf(f, "\n");
+        for (int i = 0; i < runs; i++)
+            if (!exists[i])
+                fprintf(f, "%f, ", timesV[i]);
 
-        // CHECK_ZERO(fclose(f));
+        CHECK_ZERO(fclose(f));
     }
 
     CHECK_ZERO(LAGraph_Delete(&G, msg));
+    CHECK_ZERO(LAGraph_Delete(&G_tr, msg));
 
     LAGraph_Finalize(msg);
 }
