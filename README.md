@@ -25,9 +25,9 @@ python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
 ```
 Словарь соответствия вершина/номер по-умолчанию называется `dictionary.txt`
 
-Пример использования:
+Пример конвертации примера из `examples/graph.csv`:
 ```bash
-python3 ./scripts/convert-csv-to-mtx.py graph.csv graph.mtx
+python3 ./scripts/convert-csv-to-mtx.py examples/graph.csv graph.mtx
 ```
 
 Запуск бенчмарков
