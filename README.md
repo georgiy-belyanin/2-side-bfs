@@ -6,16 +6,15 @@ Linear algebra based 2-side-BFS
 -------------
 Для сборки выполните:
 ```bash
-sudo apt install -y g++ gcc cmake python3 unzip jupyter-notebook &&
+sudo apt install -y g++ gcc cmake python3 jupyter-notebook libsuitesparse-dev &&
 git clone https://github.com/georgiy-belyanin/2-side-bfs.git &&
 cd 2-side-bfs &&
-git submodule init &&
-git submodule update &&
-./scripts/get-graphblas.sh &&
-export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include &&
-export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so &&
-mkdir build && cd build && cmake .. -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} && make -j`nproc` && cd ..
+git submodule update --init --recursive &&
+mkdir build &&
+cmake -S . -B build/ &&
+cmake --build build
 ```
+Проверено на Ubuntu 22.04, gcc 12.3.0
 
 Конвертация графа в нужный формат
 ---------------------------------
@@ -27,7 +26,7 @@ python3 ./scripts/convert-csv-to-mtx.py <graph.csv> <graph.mtx> [dictionary.txt]
 
 Пример использования:
 ```bash
-python3 ./scripts/convert-csv-to-mtx.py graph.csv graph.mtx
+python3 ./scripts/convert-csv-to-mtx.py examples/graph.csv graph.mtx
 ```
 
 Запуск бенчмарков
@@ -61,11 +60,10 @@ jupyter notebook <results/>
 - `cmake`
 - Компилятор `g++` или `clang++`
 - Библиотека `SuiteSparse:GraphBLAS`
-- Утилита `unzip`
 
 Для установки зависимостей сборки на debian-based дистрибутивах:
 ```bash
-apt install -y g++ gcc cmake unzip
+sudo apt install -y g++ gcc cmake python3 jupyter-notebook libsuitesparse-dev
 ```
 
 Для сборки так же необходимо получить сабмодули:
@@ -81,7 +79,7 @@ apt install -y python3
 
 SuiteSparse:GraphBLAS
 ---------------------
-Чтобы скачать собранную библиотеку можно воспользоваться скриптом:
+SuiteSparse:GraphBLAS доступен в репозиториях популярных дистрибутивов
 ```bash
 ./scripts/get-graphblas.sh
 ```
@@ -90,15 +88,9 @@ SuiteSparse:GraphBLAS
 
 Сборка
 ------
-Для сборки проекта используется CMake, в случае, если SuiteSparse:GraphBLAS не собирался из исходников, выполните из корня репозитория:
+Для сборки проекта используется CMake необходимо выполнить из корня репозитория:
 ```bash
 # Эти переменные нужны, если GraphBLAS скачивается pre-built
-export GRAPHBLAS_INCLUDE_DIR=`pwd`/graphblas-binaries/include
-export GRAPHBLAS_LIBRARY=`pwd`/graphblas-binaries/lib/libgraphblas.so
 mkdir build && cd build && cmake .. -DGRAPHBLAS_INCLUDE_DIR=${GRAPHBLAS_INCLUDE_DIR} -DGRAPHBLAS_LIBRARY=${GRAPHBLAS_LIBRARY} && make -j`nproc` && cd ..
 ```
 
-Если SuiteSparse:GraphBLAS собирался и устанавливался предварительно из исходного кода, достаточно выполнить:
-```bash
-mkdir build && cd build && cmake .. && make -j`nproc` && cd ..
-```
